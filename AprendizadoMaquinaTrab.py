@@ -128,6 +128,71 @@ def naive_bayes(data):
     #y_pred = gnb.fit(X_train, y_train).predict(X_test)
     #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
 
+# CrossValidadtion(DF, K):
+#   DF.count() / K 
+#   for: 
+#       folds[i] = DF.groupby('target').sample()
+#       DF = DF.remove(folds[i])
+#   return folds
+
+def CrossValidation(data_frame: pd.DataFrame, k):
+    
+    folds = []
+    
+    n_elems = int(np.round(data_frame['anaemia'].count() / k ))
+    fold_prop = 1 / k
+
+    for i in range(0,k):
+        sample_amount = min(n_elems, len(data_frame))
+        folds.append(data_frame.sample(sample_amount, replace=False, random_state=17))
+    
+    #folds.append(data_frame.sample(n_elems, replace=False, random_state=17))
+        
+    print(folds[1].groupby('DEATH_EVENT', group_keys=False).count())
+    print(folds[0].groupby('DEATH_EVENT', group_keys=False).count())
+    return folds
+
+def CrossValidation_v2(data_frame: pd.DataFrame, k):
+    
+    folds = []
+
+    total_elems = data_frame['anaemia'].count()
+    elems_per_fold = total_elems / k 
+
+    grouped_df = data_frame.groupby('DEATH_EVENT', group_keys=False)
+    groups = grouped_df['anaemia'].count()
+    #print(groups)
+
+    negative = groups.iloc[0]
+    positive = groups.iloc[1]
+
+    n_pos = int(np.floor((positive/total_elems) * elems_per_fold))
+    n_neg = int(np.floor((negative/total_elems) * elems_per_fold))
+
+    neg_group = grouped_df.get_group(0)
+    pos_group = grouped_df.get_group(1)
+
+    for i in range(0, k):   
+        for e in range(0, n_pos):
+            if e < pos_group['anaemia'].count():
+                folds.append(pos_group.iloc[e])
+                pos_group = pos_group.droplevel(e)
+            else:
+                if e < neg_group['anaemia'].count():
+                    folds.append(neg_group.iloc[e])
+                    neg_group = neg_group.droplevel(e)
+
+        for e in range(0, n_neg):
+            if e < neg_group['anaemia'].count():
+                folds.append(neg_group.iloc[e])
+                neg_group = neg_group.droplevel(e)
+            else:
+                if e < pos_group['anaemia'].count():
+                    folds.append(pos_group.iloc[e])
+                    pos_group = pos_group.droplevel(e)
+
+    print(folds[0])
+    return 0
 
 if __name__ == '__main__':
 
@@ -135,9 +200,9 @@ if __name__ == '__main__':
     data_normalized = normalize(data)
     #data_normalized = data_normalized.iloc[0: , :]
     
-    print("Dataset:", data_normalized.head())
+    #print("Dataset:", data_normalized.head())
 
-    arvores_decisao(data_normalized)
+    #arvores_decisao(data_normalized)
     #naive_bayes(data_normalized)
 
     '''
@@ -151,9 +216,7 @@ if __name__ == '__main__':
 
     '''
 
-# CrossValidadtion(DF, K):
-#   DF.count() / K 
-#   for: 
-#       folds[i] = DF.groupby('target').sample()
-#       DF = DF.remove(folds[i])
-#   return folds
+    #sample_amount = min(round(n*prop), len(df_to_sample))
+    #fold = data_normalized.sample(100, replace=False, random_state=0)
+    #print(fold.groupby('DEATH_EVENT', group_keys=False).count())
+    folds = CrossValidation(data_normalized, 2)
