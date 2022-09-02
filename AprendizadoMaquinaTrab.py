@@ -128,18 +128,12 @@ def naive_bayes(data):
     #y_pred = gnb.fit(X_train, y_train).predict(X_test)
     #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
 
-# CrossValidadtion(DF, K):
-#   DF.count() / K 
-#   for: 
-#       folds[i] = DF.groupby('target').sample()
-#       DF = DF.remove(folds[i])
-#   return folds
 
-def CrossValidation(data_frame: pd.DataFrame, k):
+def CrossValidation_v2(data_frame: pd.DataFrame, k):
     
     folds = []
     
-    n_elems = int(np.round(data_frame['anaemia'].count() / k ))
+    n_elems = int(np.round(len(data_frame) / k ))
     fold_prop = 1 / k
 
     for i in range(0,k):
@@ -152,12 +146,18 @@ def CrossValidation(data_frame: pd.DataFrame, k):
     print(folds[0].groupby('DEATH_EVENT', group_keys=False).count())
     return folds
 
-def CrossValidation_v2(data_frame: pd.DataFrame, k):
+# Get the proportions of the classes 
+# try to distibute them in the k folds in such a way to minimize the diff = |orig prop - fold prop|
+#   put one elem of the 1st class in all folds, then another and another... 
+#   unitl there aren't any or len(fold) == n_class_per_fold 
+#   repeat for the other class unitl there are no elements left
+
+def CrossValidation(data_frame: pd.DataFrame, k):
     
     folds = []
 
-    total_elems = data_frame['anaemia'].count()
-    elems_per_fold = total_elems / k 
+    total_elems = len(data_frame)
+    elems_per_fold = int(np.round(total_elems / k)) 
 
     grouped_df = data_frame.groupby('DEATH_EVENT', group_keys=False)
     groups = grouped_df['anaemia'].count()
@@ -166,37 +166,34 @@ def CrossValidation_v2(data_frame: pd.DataFrame, k):
     negative = groups.iloc[0]
     positive = groups.iloc[1]
 
-    n_pos = int(np.floor((positive/total_elems) * elems_per_fold))
-    n_neg = int(np.floor((negative/total_elems) * elems_per_fold))
+    n_pos = int(np.round((positive/total_elems) * elems_per_fold))
+    n_neg = int(np.round((negative/total_elems) * elems_per_fold))
 
     neg_group = grouped_df.get_group(0)
     pos_group = grouped_df.get_group(1)
+    #print(pos_group)
 
-    for i in range(0, k):   
-        for e in range(0, n_pos):
-            if e < pos_group['anaemia'].count():
-                folds.append(pos_group.iloc[e])
-                pos_group = pos_group.droplevel(e)
-            else:
-                if e < neg_group['anaemia'].count():
-                    folds.append(neg_group.iloc[e])
-                    neg_group = neg_group.droplevel(e)
+    for i in range(0, k):
+        folds.append(pd.DataFrame())   
+    
+    i=0    
+    while len(pos_group) > 0:
+        folds[i] = folds[i].append(pos_group.iloc[0], ignore_index=True)
+        pos_group = pos_group.iloc[1:]
+        i=(i+1) % k
+    
+    i=0
+    while len(neg_group) > 0:
+        folds[i] = folds[i].append(neg_group.iloc[0], ignore_index=True)
+        neg_group = neg_group.iloc[1:]
+        i=(i+1) % k   
 
-        for e in range(0, n_neg):
-            if e < neg_group['anaemia'].count():
-                folds.append(neg_group.iloc[e])
-                neg_group = neg_group.droplevel(e)
-            else:
-                if e < pos_group['anaemia'].count():
-                    folds.append(pos_group.iloc[e])
-                    pos_group = pos_group.droplevel(e)
-
-    print(folds[0])
+    print(folds[4].groupby('DEATH_EVENT', group_keys=False).count())
     return 0
 
 if __name__ == '__main__':
 
-    data = pd.read_csv("heart_failure_clinical_records_dataset.csv", delimiter=',', header=0, index_col=0)
+    data = pd.read_csv("heart_failure_clinical_records_dataset.csv", delimiter=',', header=0)
     data_normalized = normalize(data)
     #data_normalized = data_normalized.iloc[0: , :]
     
@@ -219,4 +216,4 @@ if __name__ == '__main__':
     #sample_amount = min(round(n*prop), len(df_to_sample))
     #fold = data_normalized.sample(100, replace=False, random_state=0)
     #print(fold.groupby('DEATH_EVENT', group_keys=False).count())
-    folds = CrossValidation(data_normalized, 2)
+    folds = CrossValidation(data_normalized, 5)
