@@ -27,7 +27,7 @@ def arvores_decisao(data):
 
     X, Y, X_train, X_test, y_train, y_test = splitdataset(data)
     clf_gini = train_using_gini(X_train, X_test, y_train)
-    clf_entropy = tarin_using_entropy(X_train, X_test, y_train)
+    clf_entropy = train_using_entropy(X_train, X_test, y_train)
 
     # Operational Phase
     print("Results Using Gini Index:")
@@ -35,7 +35,12 @@ def arvores_decisao(data):
     # Prediction using gini
     y_pred_gini = prediction(X_test, clf_gini)
     cal_accuracy(y_test, y_pred_gini)
-      
+    
+    conf_matrix = GenerateConfusionMatrix(y_test, y_pred_gini, 2)
+    
+    print("Nossa matriz: ")
+    print(conf_matrix)
+
     print("Results Using Entropy:")
     # Prediction using entropy
     y_pred_entropy = prediction(X_test, clf_entropy)
@@ -66,7 +71,7 @@ def train_using_gini(X_train, X_test, y_train):
     return clf_gini
       
 # Function to perform training with entropy.
-def tarin_using_entropy(X_train, X_test, y_train):
+def train_using_entropy(X_train, X_test, y_train):
   
     # Decision tree with entropy
     clf_entropy = DecisionTreeClassifier(
@@ -129,25 +134,6 @@ def naive_bayes(data):
     #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
 
 
-def CrossValidation_v2(data_frame: pd.DataFrame, k):
-    
-    folds = []
-    
-    n_elems = int(np.round(len(data_frame) / k ))
-    fold_prop = 1 / k
-
-    for i in range(0,k):
-        sample_amount = min(n_elems, len(data_frame))
-        folds.append(data_frame.sample(sample_amount, replace=False, random_state=17))
-    
-    #folds.append(data_frame.sample(n_elems, replace=False, random_state=17))
-        
-    print(folds[1].groupby('DEATH_EVENT', group_keys=False).count())
-    print(folds[0].groupby('DEATH_EVENT', group_keys=False).count())
-    return folds
-
-
-
 def CrossValidation(data_frame: pd.DataFrame, k):
     ''' Get the proportions of the classes\n
         Try to distibute them in k folds in such a way to minimize the diff = |orig prop - fold prop| in all of them\n
@@ -156,41 +142,69 @@ def CrossValidation(data_frame: pd.DataFrame, k):
         -> repeat for the other class unitl there are no elements left'''
 
     folds = []
+    groups = []
 
-    total_elems = len(data_frame)
-    elems_per_fold = int(np.round(total_elems / k)) 
+    #total_elems = len(data_frame)
+    #elems_per_fold = int(np.round(total_elems / k)) 
 
     grouped_df = data_frame.groupby('DEATH_EVENT', group_keys=False)
-    groups = grouped_df['anaemia'].count()
-    #print(groups)
 
-    negative = groups.iloc[0]
-    positive = groups.iloc[1]
+    #negative = groups.iloc[0]
+    #positive = groups.iloc[1]
 
-    n_pos = int(np.round((positive/total_elems) * elems_per_fold))
-    n_neg = int(np.round((negative/total_elems) * elems_per_fold))
+    #n_pos = int(np.round((positive/total_elems) * elems_per_fold))
+    #n_neg = int(np.round((negative/total_elems) * elems_per_fold))    
 
-    neg_group = grouped_df.get_group(0)
-    pos_group = grouped_df.get_group(1)
+    for g in range(len(grouped_df.groups)):
+        groups.append(pd.DataFrame()) 
+        groups[g] = groups[g].append(grouped_df.get_group(g))
+    
+    #neg_group = grouped_df.get_group(0)
+    #pos_group = grouped_df.get_group(1)
     #print(pos_group)
 
     for i in range(0, k):
         folds.append(pd.DataFrame())   
     
-    i=0    
-    while len(pos_group) > 0:
-        folds[i] = folds[i].append(pos_group.iloc[0], ignore_index=True)
-        pos_group = pos_group.iloc[1:]
-        i=(i+1) % k
-    
-    i=0
-    while len(neg_group) > 0:
-        folds[i] = folds[i].append(neg_group.iloc[0], ignore_index=True)
-        neg_group = neg_group.iloc[1:]
-        i=(i+1) % k   
 
-    print(folds[4].groupby('DEATH_EVENT', group_keys=False).count())
-    return 0
+    for g in range(len(grouped_df.groups)):
+        i=0    
+        while len(groups[g]) > 0:
+            folds[i] = folds[i].append(groups[g].iloc[0], ignore_index=True)
+            groups[g] = groups[g].iloc[1:]
+            i=(i+1) % k
+
+    # i=0    
+    # while len(pos_group) > 0:
+    #     folds[i] = folds[i].append(pos_group.iloc[0], ignore_index=True)
+    #     pos_group = pos_group.iloc[1:]
+    #     i=(i+1) % k
+    
+    # i=0
+    # while len(neg_group) > 0:
+    #     folds[i] = folds[i].append(neg_group.iloc[0], ignore_index=True)
+    #     neg_group = neg_group.iloc[1:]
+    #     i=(i+1) % k   
+
+    # Randomize the element order in each fold / Shuffle folds
+    for i in range(0,k):
+        folds[i] = folds[i].sample(frac=1)
+
+    #print(folds[2].groupby('DEATH_EVENT', group_keys=False).count())
+    return (folds, len(groups))
+
+
+def GenerateConfusionMatrix(predicted, Y, n_classes):
+    
+    confusion_matrix = np.zeros(shape=[n_classes, n_classes])
+
+    for i in range(len(predicted)):
+        y_pred = int(predicted[i])
+        y_verd = int(Y[i])
+
+        confusion_matrix[y_pred, y_verd] += 1
+
+    return confusion_matrix
 
 if __name__ == '__main__':
 
@@ -200,7 +214,7 @@ if __name__ == '__main__':
     
     #print("Dataset:", data_normalized.head())
 
-    #arvores_decisao(data_normalized)
+    arvores_decisao(data_normalized)
     #naive_bayes(data_normalized)
 
     '''
@@ -214,7 +228,15 @@ if __name__ == '__main__':
 
     '''
 
-    #sample_amount = min(round(n*prop), len(df_to_sample))
-    #fold = data_normalized.sample(100, replace=False, random_state=0)
-    #print(fold.groupby('DEATH_EVENT', group_keys=False).count())
-    folds = CrossValidation(data_normalized, 5)
+    folds, n_classes = CrossValidation(data_normalized, 3)
+    #print(folds[0])
+    
+    
+    # yt = []
+    # for row in test_set.iterrows():
+    #     # line by line
+    #     # get the data and spit it in to x (atributes) and y (target/classes)
+    #     #xt = row[1][:-1]
+    #     yt.append(row[1][-1])
+
+    # conf_matrix = GenerateConfusionMatrix(yt, , n_classes)
