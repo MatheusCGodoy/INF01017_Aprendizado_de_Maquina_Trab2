@@ -10,7 +10,7 @@ from sklearn.metrics import classification_report
 from sklearn.naive_bayes import GaussianNB
 
 def normalize(data_frame : pd.DataFrame): 
-    '''Normalizes the data in a DataFrame, column by column, using min-max aproach'''
+    '''Normalizes the data in a DataFrame, column by column, using min-max aproach\n'''
 
     normalized_df = pd.DataFrame(data_frame)
 
@@ -146,14 +146,15 @@ def CrossValidation_v2(data_frame: pd.DataFrame, k):
     print(folds[0].groupby('DEATH_EVENT', group_keys=False).count())
     return folds
 
-# Get the proportions of the classes 
-# try to distibute them in the k folds in such a way to minimize the diff = |orig prop - fold prop|
-#   put one elem of the 1st class in all folds, then another and another... 
-#   unitl there aren't any or len(fold) == n_class_per_fold 
-#   repeat for the other class unitl there are no elements left
+
 
 def CrossValidation(data_frame: pd.DataFrame, k):
-    
+    ''' Get the proportions of the classes\n
+        Try to distibute them in k folds in such a way to minimize the diff = |orig prop - fold prop| in all of them\n
+        -> put one elem from the 1st class in all folds, then another and another...\n
+        -> unitl there aren't any left or len(fold) == n_class_per_fold\n
+        -> repeat for the other class unitl there are no elements left'''
+
     folds = []
 
     total_elems = len(data_frame)
