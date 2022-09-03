@@ -134,7 +134,7 @@ def naive_bayes(data):
     #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
 
 
-def CrossValidation(data_frame: pd.DataFrame, k):
+def CrossValidation(data_frame: pd.DataFrame, target_col='target', k=5):
     ''' Get the proportions of the classes\n
         Try to distibute them in k folds in such a way to minimize the diff = |orig prop - fold prop| in all of them\n
         -> put one elem from the 1st class in all folds, then another and another...\n
@@ -147,7 +147,7 @@ def CrossValidation(data_frame: pd.DataFrame, k):
     #total_elems = len(data_frame)
     #elems_per_fold = int(np.round(total_elems / k)) 
 
-    grouped_df = data_frame.groupby('DEATH_EVENT', group_keys=False)
+    grouped_df = data_frame.groupby(target_col, group_keys=False)
 
     #negative = groups.iloc[0]
     #positive = groups.iloc[1]
@@ -158,10 +158,7 @@ def CrossValidation(data_frame: pd.DataFrame, k):
     for g in range(len(grouped_df.groups)):
         groups.append(pd.DataFrame()) 
         groups[g] = groups[g].append(grouped_df.get_group(g))
-    
-    #neg_group = grouped_df.get_group(0)
-    #pos_group = grouped_df.get_group(1)
-    #print(pos_group)
+        
 
     for i in range(0, k):
         folds.append(pd.DataFrame())   
@@ -189,6 +186,11 @@ def CrossValidation(data_frame: pd.DataFrame, k):
     # Randomize the element order in each fold / Shuffle folds
     for i in range(0,k):
         folds[i] = folds[i].sample(frac=1)
+
+        # Put the target column in the back as the last column
+        temp_cols = folds[i].columns.tolist()
+        new_cols = temp_cols[1:] + temp_cols[0:1]
+        folds[i] = folds[i][new_cols].reset_index(drop=True)
 
     #print(folds[2].groupby('DEATH_EVENT', group_keys=False).count())
     return (folds, len(groups))
@@ -227,10 +229,8 @@ if __name__ == '__main__':
 
 
     '''
-
-    folds, n_classes = CrossValidation(data_normalized, 3)
-    #print(folds[0])
-    
+    folds, n_classes = CrossValidation(data_normalized, 'DEATH_EVENT', 5)
+    print(folds[4])
     
     # yt = []
     # for row in test_set.iterrows():
