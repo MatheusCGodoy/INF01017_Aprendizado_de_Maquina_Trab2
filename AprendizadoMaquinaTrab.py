@@ -41,6 +41,13 @@ def arvores_decisao(data):
     print("Nossa matriz: ")
     print(conf_matrix)
 
+    #
+
+    generateMetrics(conf_matrix)
+
+
+    #
+
     print("Results Using Entropy:")
     # Prediction using entropy
     y_pred_entropy = prediction(X_test, clf_entropy)
@@ -135,6 +142,10 @@ def naive_bayes(data):
 
 
 def CrossValidation(data_frame: pd.DataFrame, target_col='target', k=5):
+
+    import warnings #Remover dps
+    warnings.simplefilter(action='ignore', category=FutureWarning) #Remover dps
+
     ''' Get the proportions of the classes\n
         Try to distibute them in k folds in such a way to minimize the diff = |orig prop - fold prop| in all of them\n
         -> put one elem from the 1st class in all folds, then another and another...\n
@@ -208,6 +219,25 @@ def GenerateConfusionMatrix(predicted, Y, n_classes):
 
     return confusion_matrix
 
+def generateMetrics(conf_matrix):
+    vp = conf_matrix[0][0]
+    vn = conf_matrix[1][1]
+    fp = conf_matrix[1][0]
+    fn = conf_matrix[0][1]
+
+    accuracy = (vp + vn)/ (vp + vn + fp + fn)
+    precision = vp / (vp + fp)
+    recall = vp / (vp + fn)
+    f1_measure = (2 * precision * recall) / (precision + recall)
+
+    print('Nossas estatísticas: ')
+    print('Accuracy: ', accuracy)
+    print('Precision: ', precision)
+    print('Recall: ', recall)
+    print('F1_Measure: ', f1_measure)
+
+
+
 if __name__ == '__main__':
 
     data = pd.read_csv("heart_failure_clinical_records_dataset.csv", delimiter=',', header=0)
@@ -230,7 +260,8 @@ if __name__ == '__main__':
 
     '''
     folds, n_classes = CrossValidation(data_normalized, 'DEATH_EVENT', 5)
-    print(folds[4])
+
+    #print(folds[4])
     
     # yt = []
     # for row in test_set.iterrows():
