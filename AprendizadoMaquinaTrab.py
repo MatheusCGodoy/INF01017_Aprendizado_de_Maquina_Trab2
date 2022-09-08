@@ -7,8 +7,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier
-
 from sklearn.naive_bayes import GaussianNB
+
+import matplotlib.pyplot as plt
 
 def normalize(data_frame : pd.DataFrame): 
     '''Normalizes the data in a DataFrame, column by column, using min-max aproach\n'''
@@ -26,7 +27,7 @@ def arvores_decisao(data, k):
     print("Dataset Length: ", len(data))
     print("Dataset Shape: ", data.shape)
 
-    X, Y, X_train, X_test, y_train, y_test = splitdataset(data)
+    #X, Y, X_train, X_test, y_train, y_test = splitdataset(data)
     
     folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
@@ -34,6 +35,13 @@ def arvores_decisao(data, k):
     precision = 0
     recall = 0 
     f1_measure = 0
+
+    title_folds = []
+    array_accuracy_folds = []
+    array_precision_folds = []
+    array_recall_folds = []
+    array_f1_measure_folds = []
+
     for i in range(k):
         
         y_test = folds[i].iloc[:,-1]
@@ -63,6 +71,12 @@ def arvores_decisao(data, k):
 
         fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
 
+        title_folds.append("Fold " + str(i+1)) # Teste
+        array_accuracy_folds.append(fold_accuracy) #Teste
+        array_precision_folds.append(fold_precision) #Teste
+        array_recall_folds.append(fold_recall) #Teste
+        array_f1_measure_folds.append(fold_f1_measure) #Teste
+
         accuracy += fold_accuracy
         precision += fold_precision
         recall += fold_recall
@@ -72,6 +86,9 @@ def arvores_decisao(data, k):
     precision = precision/k
     recall = recall/k
     f1_measure = f1_measure/k
+
+
+    generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy)
@@ -102,6 +119,31 @@ def arvores_decisao(data, k):
     # # Prediction using entropy
     # y_pred_entropy = prediction(x_test, clf_entropy)
     # cal_accuracy(y_test, y_pred_entropy)
+
+def generateGraphics(array_title, array_accuracy, array_precision, array_recall, array_f1_measure, metodo):
+    f1 = plt.figure(1)
+    plt.plot(array_title, array_accuracy, 'k--')
+    plt.plot(array_title, array_accuracy, 'go')
+    plt.title(metodo + " Accuracy variation")
+    f1.show()
+
+    f2 = plt.figure(2)
+    plt.plot(array_title, array_precision, 'k--')
+    plt.plot(array_title, array_precision, 'go')
+    plt.title(metodo + " Precision variation")
+    f2.show()
+
+    f3 = plt.figure(3)
+    plt.plot(array_title, array_recall, 'k--')
+    plt.plot(array_title, array_recall, 'go')
+    plt.title(metodo + " Recall variation")
+    f3.show()
+
+    f4 = plt.figure(4)
+    plt.plot(array_title, array_f1_measure, 'k--')
+    plt.plot(array_title, array_f1_measure, 'go')
+    plt.title(metodo + " F1 Measure variation")
+    f4.show()
 
 # Function to split the dataset
 def splitdataset(data):
@@ -199,6 +241,13 @@ def florestas_aleatorias(data_normalized, k):
     precision = 0
     recall = 0 
     f1_measure = 0
+
+    title_folds = []
+    array_accuracy_folds = []
+    array_precision_folds = []
+    array_recall_folds = []
+    array_f1_measure_folds = []
+
     for i in range(k):
         
         y_test = folds[i].iloc[:,-1]
@@ -227,6 +276,12 @@ def florestas_aleatorias(data_normalized, k):
 
         fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
 
+        title_folds.append("Fold " + str(i+1)) # Teste
+        array_accuracy_folds.append(fold_accuracy) #Teste
+        array_precision_folds.append(fold_precision) #Teste
+        array_recall_folds.append(fold_recall) #Teste
+        array_f1_measure_folds.append(fold_f1_measure) #Teste
+
         accuracy += fold_accuracy
         precision += fold_precision
         recall += fold_recall
@@ -237,13 +292,13 @@ def florestas_aleatorias(data_normalized, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
+    generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
+
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy)
     print('Precision: ', precision)
     print('Recall: ', recall)
     print('F1_Measure: ', f1_measure)
-
-
 
 def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
@@ -281,17 +336,16 @@ def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
 
     # Randomize the element order in each fold / Shuffle folds
-    for i in range(0,k):
+    '''for i in range(0,k):
         folds[i] = folds[i].sample(frac=1)
 
         # Put the target column in the back as the last column
         temp_cols = folds[i].columns.tolist()
         new_cols = temp_cols[1:] + temp_cols[0:1]
-        folds[i] = folds[i][new_cols].reset_index(drop=True)
+        folds[i] = folds[i][new_cols].reset_index(drop=True)'''
 
     #print(folds[2].groupby('DEATH_EVENT', group_keys=False).count())
     return (folds, len(groups))
-
 
 def GenerateConfusionMatrix(predicted, Y, n_classes):
     
@@ -325,7 +379,6 @@ def generateMetrics(conf_matrix):
     print('\n')
 
     return (accuracy, precision, recall, f1_measure)
-
 
 if __name__ == '__main__':
 
