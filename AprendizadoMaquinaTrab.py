@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.naive_bayes import GaussianNB
 
@@ -21,37 +22,86 @@ def normalize(data_frame : pd.DataFrame):
 
     return normalized_df
 
-def arvores_decisao(data):
+def arvores_decisao(data, k):
     print("Dataset Length: ", len(data))
     print("Dataset Shape: ", data.shape)
 
     X, Y, X_train, X_test, y_train, y_test = splitdataset(data)
-    clf_gini = train_using_gini(X_train, X_test, y_train)
-    clf_entropy = train_using_entropy(X_train, X_test, y_train)
+    
+    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
-    # Operational Phase
-    print("Results Using Gini Index:")
+    accuracy = 0
+    precision = 0
+    recall = 0 
+    f1_measure = 0
+    for i in range(k):
+        
+        y_test = folds[i].iloc[:,-1]
+        x_test = folds[i].drop(columns=['DEATH_EVENT'])
+        
+        x_train = pd.DataFrame()
+        for j in range(k):
+            if j != i:
+                x_train = x_train.append(folds[i])
+
+        y_train = x_train.iloc[:, -1]
+        x_train = x_train.drop(columns=['DEATH_EVENT'])
+
+        x_train = x_train.to_numpy()
+        y_train = y_train.to_numpy()
+        x_test = x_test.to_numpy()
+        y_test = y_test.to_numpy()
+        
+        clf_gini = train_using_gini(x_train, x_test, y_train)
+        #clf_entropy = train_using_entropy(x_train, x_test, y_train)
+
+        # Prediction using gini
+        y_pred_gini = prediction(x_test, clf_gini)
+        cal_accuracy(y_test, y_pred_gini)
+        
+        conf_matrix = GenerateConfusionMatrix(y_test, y_pred_gini, 2)
+
+        fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
+
+        accuracy += fold_accuracy
+        precision += fold_precision
+        recall += fold_recall
+        f1_measure += fold_f1_measure
+
+    accuracy = accuracy/k
+    precision = precision/k
+    recall = recall/k
+    f1_measure = f1_measure/k
+
+    print('Nossas estatísticas médias: ')
+    print('Accuracy: ', accuracy)
+    print('Precision: ', precision)
+    print('Recall: ', recall)
+    print('F1_Measure: ', f1_measure)
+
+    # # Operational Phase
+    # print("Results Using Gini Index:")
       
-    # Prediction using gini
-    y_pred_gini = prediction(X_test, clf_gini)
-    cal_accuracy(y_test, y_pred_gini)
+    # # Prediction using gini
+    # y_pred_gini = prediction(x_test, clf_gini)
+    # cal_accuracy(y_test, y_pred_gini)
     
-    conf_matrix = GenerateConfusionMatrix(y_test, y_pred_gini, 2)
+    # conf_matrix = GenerateConfusionMatrix(y_test, y_pred_gini, 2)
     
-    print("Nossa matriz: ")
-    print(conf_matrix)
+    # print("Nossa matriz: ")
+    # print(conf_matrix)
 
-    #
+    # #
 
-    generateMetrics(conf_matrix)
+    # generateMetrics(conf_matrix)
 
 
-    #
+    # #
 
-    print("Results Using Entropy:")
-    # Prediction using entropy
-    y_pred_entropy = prediction(X_test, clf_entropy)
-    cal_accuracy(y_test, y_pred_entropy)
+    # print("Results Using Entropy:")
+    # # Prediction using entropy
+    # y_pred_entropy = prediction(x_test, clf_entropy)
+    # cal_accuracy(y_test, y_pred_entropy)
 
 # Function to split the dataset
 def splitdataset(data):
@@ -140,11 +190,66 @@ def naive_bayes(data):
     #y_pred = gnb.fit(X_train, y_train).predict(X_test)
     #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
 
+def florestas_aleatorias(data_normalized, k):
+    
+    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
+    model = RandomForestClassifier(n_estimators=100, criterion="gini", max_depth = 3, min_samples_leaf = 5, max_features="sqrt")
 
-def CrossValidation(data_frame: pd.DataFrame, target_col='target', k=5):
+    accuracy = 0
+    precision = 0
+    recall = 0 
+    f1_measure = 0
+    for i in range(k):
+        
+        y_test = folds[i].iloc[:,-1]
+        x_test = folds[i].drop(columns=['DEATH_EVENT'])
+        
+        x_train = pd.DataFrame()
+        for j in range(k):
+            if j != i:
+                x_train = x_train.append(folds[i])
+
+        y_train = x_train.iloc[:, -1]
+        x_train = x_train.drop(columns=['DEATH_EVENT'])
+
+        x_train = x_train.to_numpy()
+        y_train = y_train.to_numpy()
+        x_test = x_test.to_numpy()
+        y_test = y_test.to_numpy()
+        
+        model.fit(x_train, y_train)
+
+        # Prediction using gini
+        y_pred_gini = model.predict(x_test)
+        cal_accuracy(y_test, y_pred_gini)
+        
+        conf_matrix = GenerateConfusionMatrix(y_test, y_pred_gini, 2)
+
+        fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
+
+        accuracy += fold_accuracy
+        precision += fold_precision
+        recall += fold_recall
+        f1_measure += fold_f1_measure
+
+    accuracy = accuracy/k
+    precision = precision/k
+    recall = recall/k
+    f1_measure = f1_measure/k
+
+    print('Nossas estatísticas médias: ')
+    print('Accuracy: ', accuracy)
+    print('Precision: ', precision)
+    print('Recall: ', recall)
+    print('F1_Measure: ', f1_measure)
+
+
+
+def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
     import warnings #Remover dps
     warnings.simplefilter(action='ignore', category=FutureWarning) #Remover dps
+    # substituir "append" em folds[i] = folds[i].append(...) por "concat" -> python 3.10.0
 
     ''' Get the proportions of the classes\n
         Try to distibute them in k folds in such a way to minimize the diff = |orig prop - fold prop| in all of them\n
@@ -155,16 +260,8 @@ def CrossValidation(data_frame: pd.DataFrame, target_col='target', k=5):
     folds = []
     groups = []
 
-    #total_elems = len(data_frame)
-    #elems_per_fold = int(np.round(total_elems / k)) 
-
     grouped_df = data_frame.groupby(target_col, group_keys=False)
-
-    #negative = groups.iloc[0]
-    #positive = groups.iloc[1]
-
-    #n_pos = int(np.round((positive/total_elems) * elems_per_fold))
-    #n_neg = int(np.round((negative/total_elems) * elems_per_fold))    
+  
 
     for g in range(len(grouped_df.groups)):
         groups.append(pd.DataFrame()) 
@@ -182,17 +279,6 @@ def CrossValidation(data_frame: pd.DataFrame, target_col='target', k=5):
             groups[g] = groups[g].iloc[1:]
             i=(i+1) % k
 
-    # i=0    
-    # while len(pos_group) > 0:
-    #     folds[i] = folds[i].append(pos_group.iloc[0], ignore_index=True)
-    #     pos_group = pos_group.iloc[1:]
-    #     i=(i+1) % k
-    
-    # i=0
-    # while len(neg_group) > 0:
-    #     folds[i] = folds[i].append(neg_group.iloc[0], ignore_index=True)
-    #     neg_group = neg_group.iloc[1:]
-    #     i=(i+1) % k   
 
     # Randomize the element order in each fold / Shuffle folds
     for i in range(0,k):
@@ -210,7 +296,7 @@ def CrossValidation(data_frame: pd.DataFrame, target_col='target', k=5):
 def GenerateConfusionMatrix(predicted, Y, n_classes):
     
     confusion_matrix = np.zeros(shape=[n_classes, n_classes])
-
+    
     for i in range(len(predicted)):
         y_pred = int(predicted[i])
         y_verd = int(Y[i])
@@ -225,9 +311,10 @@ def generateMetrics(conf_matrix):
     fp = conf_matrix[1][0]
     fn = conf_matrix[0][1]
 
+
     accuracy = (vp + vn)/ (vp + vn + fp + fn)
     precision = vp / (vp + fp)
-    recall = vp / (vp + fn)
+    recall = vp / (vp + fn) 
     f1_measure = (2 * precision * recall) / (precision + recall)
 
     print('Nossas estatísticas: ')
@@ -235,7 +322,9 @@ def generateMetrics(conf_matrix):
     print('Precision: ', precision)
     print('Recall: ', recall)
     print('F1_Measure: ', f1_measure)
+    print('\n')
 
+    return (accuracy, precision, recall, f1_measure)
 
 
 if __name__ == '__main__':
@@ -246,28 +335,16 @@ if __name__ == '__main__':
     
     #print("Dataset:", data_normalized.head())
 
-    arvores_decisao(data_normalized)
+    #arvores_decisao(data_normalized, 5)
     #naive_bayes(data_normalized)
+    florestas_aleatorias(data_normalized, 5)
 
     '''
     
     Árvore de decisão
     Naive Bayes
-    Regressão Logística
     Florestas Aleatórias
-    Boosting
-
+    Regressão Logística
 
     '''
-    folds, n_classes = CrossValidation(data_normalized, 'DEATH_EVENT', 5)
-
-    #print(folds[4])
     
-    # yt = []
-    # for row in test_set.iterrows():
-    #     # line by line
-    #     # get the data and spit it in to x (atributes) and y (target/classes)
-    #     #xt = row[1][:-1]
-    #     yt.append(row[1][-1])
-
-    # conf_matrix = GenerateConfusionMatrix(yt, , n_classes)
