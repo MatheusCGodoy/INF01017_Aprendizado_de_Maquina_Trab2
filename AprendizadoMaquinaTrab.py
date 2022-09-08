@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.naive_bayes import GaussianNB
 
@@ -72,7 +73,7 @@ def arvores_decisao(data, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
-    print('\nNossas estatísticas médias: ')
+    print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy)
     print('Precision: ', precision)
     print('Recall: ', recall)
@@ -192,6 +193,60 @@ def naive_bayes(data):
     #y_pred = gnb.fit(X_train, y_train).predict(X_test)
     #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
 
+def florestas_aleatorias(data_normalized, k):
+    
+    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
+    model = RandomForestClassifier(n_estimators=100, criterion="gini", max_depth = 3, min_samples_leaf = 5, max_features="sqrt")
+
+    accuracy = 0
+    precision = 0
+    recall = 0 
+    f1_measure = 0
+    for i in range(k):
+        
+        y_test = folds[i].iloc[:,-1]
+        x_test = folds[i].drop(columns=['DEATH_EVENT'])
+        
+        x_train = pd.DataFrame()
+        for j in range(k):
+            if j != i:
+                x_train = x_train.append(folds[i])
+
+        y_train = x_train.iloc[:, -1]
+        x_train = x_train.drop(columns=['DEATH_EVENT'])
+
+        x_train = x_train.to_numpy()
+        y_train = y_train.to_numpy()
+        x_test = x_test.to_numpy()
+        y_test = y_test.to_numpy()
+        
+        model.fit(x_train, y_train)
+
+        # Prediction using gini
+        y_pred_gini = model.predict(x_test)
+        cal_accuracy(y_test, y_pred_gini)
+        
+        conf_matrix = GenerateConfusionMatrix(y_test, y_pred_gini, 2)
+
+        fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
+
+        accuracy += fold_accuracy
+        precision += fold_precision
+        recall += fold_recall
+        f1_measure += fold_f1_measure
+
+    accuracy = accuracy/k
+    precision = precision/k
+    recall = recall/k
+    f1_measure = f1_measure/k
+
+    print('Nossas estatísticas médias: ')
+    print('Accuracy: ', accuracy)
+    print('Precision: ', precision)
+    print('Recall: ', recall)
+    print('F1_Measure: ', f1_measure)
+
+
 
 def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
@@ -283,19 +338,16 @@ if __name__ == '__main__':
     
     #print("Dataset:", data_normalized.head())
 
-    arvores_decisao(data_normalized, 5)
+    #arvores_decisao(data_normalized, 5)
     #naive_bayes(data_normalized)
+    florestas_aleatorias(data_normalized, 5)
 
     '''
     
     Árvore de decisão
     Naive Bayes
-    Regressão Logística
     Florestas Aleatórias
-    Boosting
-
+    Regressão Logística
 
     '''
-    #folds, n_classes = CrossValidation(data_normalized, 'DEATH_EVENT', 5)
-
-   
+    
