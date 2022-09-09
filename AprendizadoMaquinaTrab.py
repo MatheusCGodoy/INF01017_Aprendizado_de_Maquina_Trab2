@@ -101,13 +101,13 @@ def arvores_decisao(data, k):
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy)
     print('Var acc: ', var_acc)
-
+    print('\n')
     print('Precision: ', precision)
     print('Var prec: ', var_prec)
-
+    print('\n')
     print('Recall: ', recall)
     print('Var Rec: ', var_rec)
-
+    print('\n')
     print('F1_Measure: ', f1_measure)
     print('Var F1: ', var_f1)
 
@@ -210,18 +210,6 @@ def naive_bayes(data):
 
     cal_accuracy(y_test, predicted)
 
-    '''n_correct = 0
-    n_wrong = 0
-
-    for i in range(len(y_test)):
-        if y_test[i] == predicted[i]:
-            n_correct += 1
-        else: 
-            n_wrong += 1
-
-    # print the % of correct answers
-    print("\nAccuracy: ", (n_correct / (n_correct + n_wrong))*100)'''
-
     #y_pred = gnb.fit(X_train, y_train).predict(X_test)
     #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
 
@@ -299,13 +287,13 @@ def florestas_aleatorias(data_normalized, k):
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy)
     print('Var acc: ', var_acc)
-
+    print('\n')
     print('Precision: ', precision)
     print('Var prec: ', var_prec)
-
+    print('\n')
     print('Recall: ', recall)
     print('Var Rec: ', var_rec)
-
+    print('\n')
     print('F1_Measure: ', f1_measure)
     print('Var F1: ', var_f1)
 
@@ -345,13 +333,13 @@ def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
 
     # Randomize the element order in each fold / Shuffle folds
-    '''for i in range(0,k):
+    for i in range(0,k):
         folds[i] = folds[i].sample(frac=1)
 
-        # Put the target column in the back as the last column
-        temp_cols = folds[i].columns.tolist()
-        new_cols = temp_cols[1:] + temp_cols[0:1]
-        folds[i] = folds[i][new_cols].reset_index(drop=True)'''
+        # # Put the target column in the back as the last column
+        # temp_cols = folds[i].columns.tolist()
+        # new_cols = temp_cols[1:] + temp_cols[0:1]
+        # folds[i] = folds[i][new_cols].reset_index(drop=True)
 
     #print(folds[2].groupby('DEATH_EVENT', group_keys=False).count())
     return (folds, len(groups))
