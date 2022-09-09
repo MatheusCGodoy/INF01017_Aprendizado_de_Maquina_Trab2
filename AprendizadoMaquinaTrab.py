@@ -99,16 +99,13 @@ def arvores_decisao(data, k):
     generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
 
     print('Nossas estatísticas médias: ')
-    print('Accuracy: ', accuracy)
+    print('Accuracy: ', accuracy, end=' | ')
     print('Var acc: ', var_acc)
-    print('\n')
-    print('Precision: ', precision)
+    print('Precision: ', precision, end=' | ')
     print('Var prec: ', var_prec)
-    print('\n')
-    print('Recall: ', recall)
+    print('Recall: ', recall, end=' | ')
     print('Var Rec: ', var_rec)
-    print('\n')
-    print('F1_Measure: ', f1_measure)
+    print('F1_Measure: ', f1_measure, end=' | ')
     print('Var F1: ', var_f1)
 
     
@@ -285,16 +282,13 @@ def florestas_aleatorias(data_normalized, k):
     generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
 
     print('Nossas estatísticas médias: ')
-    print('Accuracy: ', accuracy)
+    print('Accuracy: ', accuracy, end=' | ')
     print('Var acc: ', var_acc)
-    print('\n')
-    print('Precision: ', precision)
+    print('Precision: ', precision, end=' | ')
     print('Var prec: ', var_prec)
-    print('\n')
-    print('Recall: ', recall)
+    print('Recall: ', recall, end=' | ')
     print('Var Rec: ', var_rec)
-    print('\n')
-    print('F1_Measure: ', f1_measure)
+    print('F1_Measure: ', f1_measure, end=' | ')
     print('Var F1: ', var_f1)
 
 def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
