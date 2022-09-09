@@ -11,15 +11,15 @@ from sklearn.naive_bayes import GaussianNB
 
 import matplotlib.pyplot as plt
 
-def normalize(data_frame : pd.DataFrame): 
+def normalize(data_frame : pd.DataFrame, train_df : pd.DataFrame, target='target'): 
     '''Normalizes the data in a DataFrame, column by column, using min-max aproach\n'''
 
     normalized_df = pd.DataFrame(data_frame)
 
     # normalize the data (except the target/classes/results)
     for col in data_frame.columns:
-        if col != 'target':
-            normalized_df[col] = (data_frame[col] - data_frame[col].min()) / (data_frame[col].max() - data_frame[col].min())
+        if col != target:
+            normalized_df[col] = (data_frame[col] - train_df[col].min()) / (train_df[col].max() - train_df[col].min())
 
     return normalized_df
 
@@ -55,6 +55,10 @@ def arvores_decisao(data, k):
         y_train = x_train.iloc[:, -1]
         x_train = x_train.drop(columns=['DEATH_EVENT'])
 
+        # Normalize data
+        x_test = normalize(x_test, x_train, 'DEATH_EVENT')
+        x_train = normalize(x_train, x_train, 'DEATH_EVENT')
+
         x_train = x_train.to_numpy()
         y_train = y_train.to_numpy()
         x_test = x_test.to_numpy()
@@ -87,38 +91,27 @@ def arvores_decisao(data, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
+    var_acc = calculateVariance(array_accuracy_folds, accuracy)
+    var_prec = calculateVariance(array_precision_folds, precision)
+    var_rec = calculateVariance(array_recall_folds, recall)
+    var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
 
     generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy)
+    print('Var acc: ', var_acc)
+
     print('Precision: ', precision)
+    print('Var prec: ', var_prec)
+
     print('Recall: ', recall)
+    print('Var Rec: ', var_rec)
+
     print('F1_Measure: ', f1_measure)
+    print('Var F1: ', var_f1)
 
-    # # Operational Phase
-    # print("Results Using Gini Index:")
-      
-    # # Prediction using gini
-    # y_pred_gini = prediction(x_test, clf_gini)
-    # cal_accuracy(y_test, y_pred_gini)
     
-    # conf_matrix = GenerateConfusionMatrix(y_test, y_pred_gini, 2)
-    
-    # print("Nossa matriz: ")
-    # print(conf_matrix)
-
-    # #
-
-    # generateMetrics(conf_matrix)
-
-
-    # #
-
-    # print("Results Using Entropy:")
-    # # Prediction using entropy
-    # y_pred_entropy = prediction(x_test, clf_entropy)
-    # cal_accuracy(y_test, y_pred_entropy)
 
 def generateGraphics(array_title, array_accuracy, array_precision, array_recall, array_f1_measure, metodo):
     f1 = plt.figure(1)
@@ -261,6 +254,10 @@ def florestas_aleatorias(data_normalized, k):
         y_train = x_train.iloc[:, -1]
         x_train = x_train.drop(columns=['DEATH_EVENT'])
 
+        # Normalize data
+        x_test = normalize(x_test, x_train, 'DEATH_EVENT')
+        x_train = normalize(x_train, x_train, 'DEATH_EVENT')
+
         x_train = x_train.to_numpy()
         y_train = y_train.to_numpy()
         x_test = x_test.to_numpy()
@@ -292,13 +289,25 @@ def florestas_aleatorias(data_normalized, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
+    var_acc = calculateVariance(array_accuracy_folds, accuracy)
+    var_prec = calculateVariance(array_precision_folds, precision)
+    var_rec = calculateVariance(array_recall_folds, recall)
+    var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
+
     generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy)
+    print('Var acc: ', var_acc)
+
     print('Precision: ', precision)
+    print('Var prec: ', var_prec)
+
     print('Recall: ', recall)
+    print('Var Rec: ', var_rec)
+
     print('F1_Measure: ', f1_measure)
+    print('Var F1: ', var_f1)
 
 def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
@@ -347,6 +356,14 @@ def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
     #print(folds[2].groupby('DEATH_EVENT', group_keys=False).count())
     return (folds, len(groups))
 
+def calculateVariance(score_lst, mean):
+    variance = 0
+
+    for score in score_lst:
+        variance += np.square(score - mean)
+
+    return variance / len(score_lst)
+
 def GenerateConfusionMatrix(predicted, Y, n_classes):
     
     confusion_matrix = np.zeros(shape=[n_classes, n_classes])
@@ -383,14 +400,14 @@ def generateMetrics(conf_matrix):
 if __name__ == '__main__':
 
     data = pd.read_csv("heart_failure_clinical_records_dataset.csv", delimiter=',', header=0)
-    data_normalized = normalize(data)
+    #data_normalized = normalize(data)
     #data_normalized = data_normalized.iloc[0: , :]
     
     #print("Dataset:", data_normalized.head())
 
     #arvores_decisao(data_normalized, 5)
     #naive_bayes(data_normalized)
-    florestas_aleatorias(data_normalized, 5)
+    florestas_aleatorias(data, 5)
 
     '''
     
