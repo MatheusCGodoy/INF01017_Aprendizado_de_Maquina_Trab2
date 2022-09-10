@@ -96,7 +96,9 @@ def arvores_decisao(data, k):
     var_rec = calculateVariance(array_recall_folds, recall)
     var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
 
-    generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
+    #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
+
+    testeBoxSplot(array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy, end=' | ')
@@ -134,6 +136,30 @@ def generateGraphics(array_title, array_accuracy, array_precision, array_recall,
     plt.plot(array_title, array_f1_measure, 'go')
     plt.title(metodo + " F1 Measure variation")
     f4.show()
+
+def testeBoxSplot(accuracy, precision, recall, f1_measure):
+    data = [accuracy, precision, recall, f1_measure]
+ 
+    plt.figure(figsize =(11, 11))
+    
+    # Creating plot
+    bplots = plt.boxplot(data, vert = 1, patch_artist = False, labels=['Accuracy', 'Precision', 'Recall', 'F1_Measure'])
+
+    colors = ['pink', 'lightblue', 'lightgreen', 'red']
+    c = 0
+    for i, bplot in enumerate(bplots['boxes']):
+        bplot.set(color=colors[c], linewidth=3)
+        c += 1
+
+    # Adicionando Título ao gráfico
+    plt.title("Resultado métricas folds", loc="center", fontsize=18)
+    plt.xlabel("Métricas")
+    plt.ylabel("Valores")
+
+    # show plot
+    plt.show()
+
+
 
 # Function to split the dataset
 def splitdataset(data):
@@ -279,7 +305,7 @@ def florestas_aleatorias(data_normalized, k):
     var_rec = calculateVariance(array_recall_folds, recall)
     var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
 
-    generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
+    #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy, end=' | ')
@@ -387,9 +413,9 @@ if __name__ == '__main__':
     
     #print("Dataset:", data_normalized.head())
 
-    #arvores_decisao(data_normalized, 5)
+    arvores_decisao(data, 5)
     #naive_bayes(data_normalized)
-    florestas_aleatorias(data, 5)
+    #florestas_aleatorias(data, 5)
 
     '''
     
