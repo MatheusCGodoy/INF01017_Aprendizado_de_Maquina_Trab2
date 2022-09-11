@@ -27,8 +27,6 @@ def arvores_decisao(data, k):
     print("Dataset Length: ", len(data))
     print("Dataset Shape: ", data.shape)
 
-    #X, Y, X_train, X_test, y_train, y_test = splitdataset(data)
-    
     folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
     accuracy = 0
@@ -65,21 +63,24 @@ def arvores_decisao(data, k):
         y_test = y_test.to_numpy()
         
         clf_gini = train_using_gini(x_train, x_test, y_train)
-        #clf_entropy = train_using_entropy(x_train, x_test, y_train)
 
         # Prediction using gini
         y_pred_gini = prediction(x_test, clf_gini)
-        cal_accuracy(y_test, y_pred_gini)
+        #cal_accuracy(y_test, y_pred_gini)
         
-        conf_matrix = GenerateConfusionMatrix(y_test, y_pred_gini, 2)
+        conf_matrix = generateConfusionMatrix(y_test, y_pred_gini, 2)
+
+        print("Arvore de Decisão Fold " + str(i + 1) + " Confusion Matrix: ")
+        print(conf_matrix)
+        print("\n")
 
         fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
 
-        title_folds.append("Fold " + str(i+1)) # Teste
-        array_accuracy_folds.append(fold_accuracy) #Teste
-        array_precision_folds.append(fold_precision) #Teste
-        array_recall_folds.append(fold_recall) #Teste
-        array_f1_measure_folds.append(fold_f1_measure) #Teste
+        title_folds.append("Fold " + str(i+1))
+        array_accuracy_folds.append(fold_accuracy)
+        array_precision_folds.append(fold_precision)
+        array_recall_folds.append(fold_recall)
+        array_f1_measure_folds.append(fold_f1_measure)
 
         accuracy += fold_accuracy
         precision += fold_precision
@@ -96,9 +97,8 @@ def arvores_decisao(data, k):
     var_rec = calculateVariance(array_recall_folds, recall)
     var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
 
-    #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
-
-    testeBoxSplot('Árvore de Decisão', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
+    generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
+    generateBoxSplot('Árvore de Decisão', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy, end=' | ')
@@ -110,34 +110,81 @@ def arvores_decisao(data, k):
     print('F1_Measure: ', f1_measure, end=' | ')
     print('Var F1: ', var_f1)
 
-    
-
 def generateGraphics(array_title, array_accuracy, array_precision, array_recall, array_f1_measure, metodo):
-    f1 = plt.figure(1)
-    plt.plot(array_title, array_accuracy, 'k--')
-    plt.plot(array_title, array_accuracy, 'go')
-    plt.title(metodo + " Accuracy variation")
-    f1.show()
+    if metodo == 'Árvore de decisão':
+        f1 = plt.figure(1)
+        plt.plot(array_title, array_accuracy, 'k--')
+        plt.plot(array_title, array_accuracy, 'go')
+        plt.title(metodo + " Accuracy variation")
+        f1.show()
 
-    f2 = plt.figure(2)
-    plt.plot(array_title, array_precision, 'k--')
-    plt.plot(array_title, array_precision, 'go')
-    plt.title(metodo + " Precision variation")
-    f2.show()
+        f2 = plt.figure(2)
+        plt.plot(array_title, array_precision, 'k--')
+        plt.plot(array_title, array_precision, 'go')
+        plt.title(metodo + " Precision variation")
+        f2.show()
 
-    f3 = plt.figure(3)
-    plt.plot(array_title, array_recall, 'k--')
-    plt.plot(array_title, array_recall, 'go')
-    plt.title(metodo + " Recall variation")
-    f3.show()
+        f3 = plt.figure(3)
+        plt.plot(array_title, array_recall, 'k--')
+        plt.plot(array_title, array_recall, 'go')
+        plt.title(metodo + " Recall variation")
+        f3.show()
 
-    f4 = plt.figure(4)
-    plt.plot(array_title, array_f1_measure, 'k--')
-    plt.plot(array_title, array_f1_measure, 'go')
-    plt.title(metodo + " F1 Measure variation")
-    f4.show()
+        f4 = plt.figure(4)
+        plt.plot(array_title, array_f1_measure, 'k--')
+        plt.plot(array_title, array_f1_measure, 'go')
+        plt.title(metodo + " F1 Measure variation")
+        f4.show()
+    elif metodo == 'Naïve Bayes':
+        f5 = plt.figure(7)
+        plt.plot(array_title, array_accuracy, 'k--')
+        plt.plot(array_title, array_accuracy, 'go')
+        plt.title(metodo + " Accuracy variation")
+        f5.show()
 
-def testeBoxSplot(nome_algoritmo, accuracy, precision, recall, f1_measure):
+        f6 = plt.figure(8)
+        plt.plot(array_title, array_precision, 'k--')
+        plt.plot(array_title, array_precision, 'go')
+        plt.title(metodo + " Precision variation")
+        f6.show()
+
+        f7 = plt.figure(9)
+        plt.plot(array_title, array_recall, 'k--')
+        plt.plot(array_title, array_recall, 'go')
+        plt.title(metodo + " Recall variation")
+        f7.show()
+
+        f8 = plt.figure(10)
+        plt.plot(array_title, array_f1_measure, 'k--')
+        plt.plot(array_title, array_f1_measure, 'go')
+        plt.title(metodo + " F1 Measure variation")
+        f8.show()
+    else:
+        f13 = plt.figure(13)
+        plt.plot(array_title, array_accuracy, 'k--')
+        plt.plot(array_title, array_accuracy, 'go')
+        plt.title(metodo + " Accuracy variation")
+        f13.show()
+
+        f14 = plt.figure(14)
+        plt.plot(array_title, array_precision, 'k--')
+        plt.plot(array_title, array_precision, 'go')
+        plt.title(metodo + " Precision variation")
+        f14.show()
+
+        f15 = plt.figure(15)
+        plt.plot(array_title, array_recall, 'k--')
+        plt.plot(array_title, array_recall, 'go')
+        plt.title(metodo + " Recall variation")
+        f15.show()
+
+        f16 = plt.figure(16)
+        plt.plot(array_title, array_f1_measure, 'k--')
+        plt.plot(array_title, array_f1_measure, 'go')
+        plt.title(metodo + " F1 Measure variation")
+        f16.show()
+
+def generateBoxSplot(nome_algoritmo, accuracy, precision, recall, f1_measure):
     data = [accuracy, precision, recall, f1_measure]
  
     plt.figure(figsize =(11, 11))
@@ -158,8 +205,6 @@ def testeBoxSplot(nome_algoritmo, accuracy, precision, recall, f1_measure):
 
     # show plot
     plt.show(block=False)
-
-
 
 # Function to split the dataset
 def splitdataset(data):
@@ -202,8 +247,6 @@ def prediction(X_test, clf_object):
   
     # Predicton on test with giniIndex
     y_pred = clf_object.predict(X_test)
-    print("Predicted values:")
-    print(y_pred)
     return y_pred
       
 # Function to calculate accuracy
@@ -259,18 +302,21 @@ def naive_bayes(data, k):
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
 
-        cal_accuracy(y_test, y_pred)
+        #cal_accuracy(y_test, y_pred)
         
-        conf_matrix = GenerateConfusionMatrix(y_test, y_pred, 2)
+        conf_matrix = generateConfusionMatrix(y_test, y_pred, 2)
+        
+        print("Arvore de Decisão Fold " + str(i + 1) + " Confusion Matrix: ")
         print(conf_matrix)
+        print("\n")
 
         fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
 
-        title_folds.append("Fold " + str(i+1)) # Teste
-        array_accuracy_folds.append(fold_accuracy) #Teste
-        array_precision_folds.append(fold_precision) #Teste
-        array_recall_folds.append(fold_recall) #Teste
-        array_f1_measure_folds.append(fold_f1_measure) #Teste
+        title_folds.append("Fold " + str(i+1)) 
+        array_accuracy_folds.append(fold_accuracy) 
+        array_precision_folds.append(fold_precision) 
+        array_recall_folds.append(fold_recall) 
+        array_f1_measure_folds.append(fold_f1_measure) 
 
         accuracy += fold_accuracy
         precision += fold_precision
@@ -287,9 +333,8 @@ def naive_bayes(data, k):
     var_rec = calculateVariance(array_recall_folds, recall)
     var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
 
-    #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
-
-    testeBoxSplot('Naïve Bayes', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
+    generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, 'Naïve Bayes')
+    generateBoxSplot('Naïve Bayes', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy, end=' | ')
@@ -343,17 +388,21 @@ def florestas_aleatorias(data_normalized, k):
 
         # Prediction using gini
         y_pred_gini = model.predict(x_test)
-        cal_accuracy(y_test, y_pred_gini)
+        #cal_accuracy(y_test, y_pred_gini)
         
-        conf_matrix = GenerateConfusionMatrix(y_test, y_pred_gini, 2)
+        conf_matrix = generateConfusionMatrix(y_test, y_pred_gini, 2)
+
+        print("Florestas aleatórias Fold " + str(i + 1) + " Confusion Matrix: ")
+        print(conf_matrix)
+        print("\n")
 
         fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
 
-        title_folds.append("Fold " + str(i+1)) # Teste
-        array_accuracy_folds.append(fold_accuracy) #Teste
-        array_precision_folds.append(fold_precision) #Teste
-        array_recall_folds.append(fold_recall) #Teste
-        array_f1_measure_folds.append(fold_f1_measure) #Teste
+        title_folds.append("Fold " + str(i+1)) 
+        array_accuracy_folds.append(fold_accuracy) 
+        array_precision_folds.append(fold_precision) 
+        array_recall_folds.append(fold_recall) 
+        array_f1_measure_folds.append(fold_f1_measure) 
 
         accuracy += fold_accuracy
         precision += fold_precision
@@ -370,8 +419,8 @@ def florestas_aleatorias(data_normalized, k):
     var_rec = calculateVariance(array_recall_folds, recall)
     var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
 
-    #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
-    testeBoxSplot('Florestas Aleatórias', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
+    generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
+    generateBoxSplot('Florestas Aleatórias', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy, end=' | ')
@@ -400,16 +449,13 @@ def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
     grouped_df = data_frame.groupby(target_col, group_keys=False)
   
-
     for g in range(len(grouped_df.groups)):
         groups.append(pd.DataFrame()) 
         groups[g] = groups[g].append(grouped_df.get_group(g))
         
-
     for i in range(0, k):
         folds.append(pd.DataFrame())   
     
-
     for g in range(len(grouped_df.groups)):
         i=0    
         while len(groups[g]) > 0:
@@ -417,17 +463,10 @@ def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
             groups[g] = groups[g].iloc[1:]
             i=(i+1) % k
 
-
     # Randomize the element order in each fold / Shuffle folds
     for i in range(0,k):
         folds[i] = folds[i].sample(frac=1)
 
-        # # Put the target column in the back as the last column
-        # temp_cols = folds[i].columns.tolist()
-        # new_cols = temp_cols[1:] + temp_cols[0:1]
-        # folds[i] = folds[i][new_cols].reset_index(drop=True)
-
-    #print(folds[2].groupby('DEATH_EVENT', group_keys=False).count())
     return (folds, len(groups))
 
 def calculateVariance(score_lst, mean):
@@ -438,7 +477,7 @@ def calculateVariance(score_lst, mean):
 
     return variance / len(score_lst)
 
-def GenerateConfusionMatrix(predicted, Y, n_classes):
+def generateConfusionMatrix(predicted, Y, n_classes):
     
     confusion_matrix = np.zeros(shape=[n_classes, n_classes])
     
@@ -452,16 +491,6 @@ def GenerateConfusionMatrix(predicted, Y, n_classes):
 
 def generateMetrics(conf_matrix):
 
-    # vp = conf_matrix[0][0]
-    # vn = conf_matrix[1][1]
-    # fp = conf_matrix[1][0]
-    # fn = conf_matrix[0][1]
-
-    # pred x verd (linha x coluna)
-    #   0    1  
-    # 0 vn  fn 
-    # 1 fp  vp
-
     vn = conf_matrix[0][0]
     vp = conf_matrix[1][1]
     fp = conf_matrix[1][0]
@@ -472,22 +501,11 @@ def generateMetrics(conf_matrix):
     recall = vp / (vp + fn) 
     f1_measure = (2 * precision * recall) / (precision + recall)
 
-    # print('Nossas estatísticas: ')
-    # print('Accuracy: ', accuracy)
-    # print('Precision: ', precision)
-    # print('Recall: ', recall)
-    # print('F1_Measure: ', f1_measure)
-    # print('\n')
-
     return (accuracy, precision, recall, f1_measure)
 
 if __name__ == '__main__':
 
     data = pd.read_csv("heart_failure_clinical_records_dataset.csv", delimiter=',', header=0)
-    #data_normalized = normalize(data)
-    #data_normalized = data_normalized.iloc[0: , :]
-    
-    #print("Dataset:", data_normalized.head())
 
     print("ARVORES DE DECISAO:")
     arvores_decisao(data, 5)
@@ -501,15 +519,4 @@ if __name__ == '__main__':
     naive_bayes(data, 5)
     print("\n\n\n")
 
-    '''
-    
-    Árvore de decisão
-    Naive Bayes
-    Florestas Aleatórias
-    Regressão Logística
-
-    '''
-
-    # Just so that plots don't close when the program ends
-    # Prog will only exit if all plots are manually closed
     plt.show() 
