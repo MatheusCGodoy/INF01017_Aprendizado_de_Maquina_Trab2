@@ -271,7 +271,7 @@ def naive_bayes(data, k):
         x_test = x_test.to_numpy()
         y_test = y_test.to_numpy()
         
-    model = GaussianNB()
+        model = GaussianNB()
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
 
