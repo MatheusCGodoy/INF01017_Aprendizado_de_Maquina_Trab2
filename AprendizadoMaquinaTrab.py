@@ -157,7 +157,7 @@ def testeBoxSplot(accuracy, precision, recall, f1_measure):
     plt.ylabel("Valores")
 
     # show plot
-    plt.show()
+    plt.show(block=False)
 
 
 
@@ -386,6 +386,7 @@ def florestas_aleatorias(data_normalized, k):
     var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
 
     #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
+    testeBoxSplot(array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy, end=' | ')
@@ -513,4 +514,7 @@ if __name__ == '__main__':
     Regressão Logística
 
     '''
-    
+
+    # Just so that plots don't close when the program ends
+    # Prog will only exit if all plots are manually closed
+    plt.show() 
