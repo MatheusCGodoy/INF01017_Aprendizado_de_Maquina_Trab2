@@ -476,12 +476,12 @@ def generateMetrics(conf_matrix):
     recall = vp / (vp + fn) 
     f1_measure = (2 * precision * recall) / (precision + recall)
 
-    print('Nossas estatísticas: ')
-    print('Accuracy: ', accuracy)
-    print('Precision: ', precision)
-    print('Recall: ', recall)
-    print('F1_Measure: ', f1_measure)
-    print('\n')
+    # print('Nossas estatísticas: ')
+    # print('Accuracy: ', accuracy)
+    # print('Precision: ', precision)
+    # print('Recall: ', recall)
+    # print('F1_Measure: ', f1_measure)
+    # print('\n')
 
     return (accuracy, precision, recall, f1_measure)
 
