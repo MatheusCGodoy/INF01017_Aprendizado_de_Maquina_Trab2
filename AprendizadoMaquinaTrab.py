@@ -92,23 +92,27 @@ def arvores_decisao(data, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
-    var_acc = calculateVariance(array_accuracy_folds, accuracy)
-    var_prec = calculateVariance(array_precision_folds, precision)
-    var_rec = calculateVariance(array_recall_folds, recall)
-    var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
+    var_acc, desvio_padrao_acc = calculateVarianceAndStdDeviation(array_accuracy_folds, accuracy)
+    var_prec, desvio_padrao_prec = calculateVarianceAndStdDeviation(array_precision_folds, precision)
+    var_rec, desvio_padrao_rec = calculateVarianceAndStdDeviation(array_recall_folds, recall)
+    var_f1, desvio_padrao_f1 = calculateVarianceAndStdDeviation(array_f1_measure_folds, f1_measure)
 
     generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
     generateBoxSplot('Árvore de Decisão', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
-    print('Nossas estatísticas médias: ')
+    print('Nossas estatísticas médias Árvores de decisão: ')
     print('Accuracy: ', accuracy, end=' | ')
     print('Var acc: ', var_acc)
+    print('Desvio padrão acc: ', desvio_padrao_acc)
     print('Precision: ', precision, end=' | ')
     print('Var prec: ', var_prec)
+    print('Desvio padrão prec: ', desvio_padrao_prec)
     print('Recall: ', recall, end=' | ')
     print('Var Rec: ', var_rec)
+    print('Desvio padrão rec: ', desvio_padrao_rec)
     print('F1_Measure: ', f1_measure, end=' | ')
     print('Var F1: ', var_f1)
+    print('Desvio padrão F1: ', desvio_padrao_f1)
 
 def generateGraphics(array_title, array_accuracy, array_precision, array_recall, array_f1_measure, metodo):
     if metodo == 'Árvore de decisão':
@@ -328,23 +332,27 @@ def naive_bayes(data, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
-    var_acc = calculateVariance(array_accuracy_folds, accuracy)
-    var_prec = calculateVariance(array_precision_folds, precision)
-    var_rec = calculateVariance(array_recall_folds, recall)
-    var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
+    var_acc, desvio_padrao_acc = calculateVarianceAndStdDeviation(array_accuracy_folds, accuracy)
+    var_prec, desvio_padrao_prec = calculateVarianceAndStdDeviation(array_precision_folds, precision)
+    var_rec, desvio_padrao_rec = calculateVarianceAndStdDeviation(array_recall_folds, recall)
+    var_f1, desvio_padrao_f1 = calculateVarianceAndStdDeviation(array_f1_measure_folds, f1_measure)
 
     generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, 'Naïve Bayes')
     generateBoxSplot('Naïve Bayes', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
-    print('Nossas estatísticas médias: ')
+    print('Nossas estatísticas médias Naive Bayes: ')
     print('Accuracy: ', accuracy, end=' | ')
     print('Var acc: ', var_acc)
+    print('Desvio padrão acc: ', desvio_padrao_acc)
     print('Precision: ', precision, end=' | ')
     print('Var prec: ', var_prec)
+    print('Desvio padrão prec: ', desvio_padrao_prec)
     print('Recall: ', recall, end=' | ')
     print('Var Rec: ', var_rec)
+    print('Desvio padrão rec: ', desvio_padrao_rec)
     print('F1_Measure: ', f1_measure, end=' | ')
     print('Var F1: ', var_f1)
+    print('Desvio padrão F1: ', desvio_padrao_f1)
 
 def florestas_aleatorias(data_normalized, k):
     
@@ -414,23 +422,27 @@ def florestas_aleatorias(data_normalized, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
-    var_acc = calculateVariance(array_accuracy_folds, accuracy)
-    var_prec = calculateVariance(array_precision_folds, precision)
-    var_rec = calculateVariance(array_recall_folds, recall)
-    var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
+    var_acc, desvio_padrao_acc = calculateVarianceAndStdDeviation(array_accuracy_folds, accuracy)
+    var_prec, desvio_padrao_prec = calculateVarianceAndStdDeviation(array_precision_folds, precision)
+    var_rec, desvio_padrao_rec = calculateVarianceAndStdDeviation(array_recall_folds, recall)
+    var_f1, desvio_padrao_f1 = calculateVarianceAndStdDeviation(array_f1_measure_folds, f1_measure)
 
     generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
     generateBoxSplot('Florestas Aleatórias', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
-    print('Nossas estatísticas médias: ')
+    print('Nossas estatísticas médias Florestas aleatórias: ')
     print('Accuracy: ', accuracy, end=' | ')
     print('Var acc: ', var_acc)
+    print('Desvio padrão acc: ', desvio_padrao_acc)
     print('Precision: ', precision, end=' | ')
     print('Var prec: ', var_prec)
+    print('Desvio padrão prec: ', desvio_padrao_prec)
     print('Recall: ', recall, end=' | ')
     print('Var Rec: ', var_rec)
+    print('Desvio padrão rec: ', desvio_padrao_rec)
     print('F1_Measure: ', f1_measure, end=' | ')
     print('Var F1: ', var_f1)
+    print('Desvio padrão F1: ', desvio_padrao_f1)
 
 def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
@@ -469,13 +481,13 @@ def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
     return (folds, len(groups))
 
-def calculateVariance(score_lst, mean):
+def calculateVarianceAndStdDeviation(score_lst, mean):
     variance = 0
 
     for score in score_lst:
         variance += np.square(score - mean)
 
-    return variance / len(score_lst)
+    return variance / len(score_lst), np.sqrt(variance / len(score_lst))
 
 def generateConfusionMatrix(predicted, Y, n_classes):
     
