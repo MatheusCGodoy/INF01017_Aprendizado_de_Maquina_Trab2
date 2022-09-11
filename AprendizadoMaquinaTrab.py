@@ -218,23 +218,103 @@ def cal_accuracy(y_test, y_pred):
     print("Report : ",
     classification_report(y_test, y_pred))
 
-def naive_bayes(data):
-    # Separating the target variable
-    X = data.values[:, :-1]
-    Y = data.values[:, -1]
+def naive_bayes(data, k):
+    # # Separating the target variable
+    # X = data.values[:, :-1]
+    # Y = data.values[:, -1]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.5, random_state=0)
+    # X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.5, random_state=0)
+    # model = GaussianNB()
+
+    # model.fit(X_train, y_train) #Fit --> 
+
+    # predicted= model.predict(X_test)
+    # print("Predicted Value: ", predicted)
+
+    # cal_accuracy(y_test, predicted)
+
+    # #y_pred = gnb.fit(X_train, y_train).predict(X_test)
+    # #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
+
+    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
+
+    accuracy = 0
+    precision = 0
+    recall = 0 
+    f1_measure = 0
+
+    title_folds = []
+    array_accuracy_folds = []
+    array_precision_folds = []
+    array_recall_folds = []
+    array_f1_measure_folds = []
+
+    for i in range(k):
+        
+        y_test = folds[i].iloc[:,-1]
+        x_test = folds[i].drop(columns=['DEATH_EVENT'])
+        
+        x_train = pd.DataFrame()
+        for j in range(k):
+            if j != i:
+                x_train = x_train.append(folds[i])
+
+        y_train = x_train.iloc[:, -1]
+        x_train = x_train.drop(columns=['DEATH_EVENT'])
+
+        # Normalize data
+        x_test = normalize(x_test, x_train, 'DEATH_EVENT')
+        x_train = normalize(x_train, x_train, 'DEATH_EVENT')
+
+        x_train = x_train.to_numpy()
+        y_train = y_train.to_numpy()
+        x_test = x_test.to_numpy()
+        y_test = y_test.to_numpy()
+        
     model = GaussianNB()
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
 
-    model.fit(X_train, y_train) #Fit --> 
+        cal_accuracy(y_test, y_pred)
+        
+        conf_matrix = GenerateConfusionMatrix(y_test, y_pred, 2)
 
-    predicted= model.predict(X_test)
-    print("Predicted Value: ", predicted)
+        fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
 
-    cal_accuracy(y_test, predicted)
+        title_folds.append("Fold " + str(i+1)) # Teste
+        array_accuracy_folds.append(fold_accuracy) #Teste
+        array_precision_folds.append(fold_precision) #Teste
+        array_recall_folds.append(fold_recall) #Teste
+        array_f1_measure_folds.append(fold_f1_measure) #Teste
 
-    #y_pred = gnb.fit(X_train, y_train).predict(X_test)
-    #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
+        accuracy += fold_accuracy
+        precision += fold_precision
+        recall += fold_recall
+        f1_measure += fold_f1_measure
+
+    accuracy = accuracy/k
+    precision = precision/k
+    recall = recall/k
+    f1_measure = f1_measure/k
+
+    var_acc = calculateVariance(array_accuracy_folds, accuracy)
+    var_prec = calculateVariance(array_precision_folds, precision)
+    var_rec = calculateVariance(array_recall_folds, recall)
+    var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
+
+    #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
+
+    testeBoxSplot(array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
+
+    print('Nossas estatísticas médias: ')
+    print('Accuracy: ', accuracy, end=' | ')
+    print('Var acc: ', var_acc)
+    print('Precision: ', precision, end=' | ')
+    print('Var prec: ', var_prec)
+    print('Recall: ', recall, end=' | ')
+    print('Var Rec: ', var_rec)
+    print('F1_Measure: ', f1_measure, end=' | ')
+    print('Var F1: ', var_f1)
 
 def florestas_aleatorias(data_normalized, k):
     
@@ -413,9 +493,17 @@ if __name__ == '__main__':
     
     #print("Dataset:", data_normalized.head())
 
+    print("ARVORES DE DECISAO:")
     arvores_decisao(data, 5)
-    #naive_bayes(data_normalized)
-    #florestas_aleatorias(data, 5)
+    print("\n\n\n")
+
+    print("FLORESTAS ALEATORIAS:")
+    florestas_aleatorias(data, 5)
+    print("\n\n\n")
+    
+    print("NAIVE BAYES:")
+    naive_bayes(data, 5)
+    print("\n\n\n")
 
     '''
     
