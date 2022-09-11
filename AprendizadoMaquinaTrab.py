@@ -98,7 +98,7 @@ def arvores_decisao(data, k):
 
     #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
 
-    testeBoxSplot(array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
+    testeBoxSplot('Árvore de Decisão', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy, end=' | ')
@@ -137,7 +137,7 @@ def generateGraphics(array_title, array_accuracy, array_precision, array_recall,
     plt.title(metodo + " F1 Measure variation")
     f4.show()
 
-def testeBoxSplot(accuracy, precision, recall, f1_measure):
+def testeBoxSplot(nome_algoritmo, accuracy, precision, recall, f1_measure):
     data = [accuracy, precision, recall, f1_measure]
  
     plt.figure(figsize =(11, 11))
@@ -152,7 +152,7 @@ def testeBoxSplot(accuracy, precision, recall, f1_measure):
         c += 1
 
     # Adicionando Título ao gráfico
-    plt.title("Resultado métricas folds", loc="center", fontsize=18)
+    plt.title("Resultado métricas folds" + " - " + nome_algoritmo, loc="center", fontsize=18)
     plt.xlabel("Métricas")
     plt.ylabel("Valores")
 
@@ -219,22 +219,6 @@ def cal_accuracy(y_test, y_pred):
     classification_report(y_test, y_pred))
 
 def naive_bayes(data, k):
-    # # Separating the target variable
-    # X = data.values[:, :-1]
-    # Y = data.values[:, -1]
-
-    # X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.5, random_state=0)
-    # model = GaussianNB()
-
-    # model.fit(X_train, y_train) #Fit --> 
-
-    # predicted= model.predict(X_test)
-    # print("Predicted Value: ", predicted)
-
-    # cal_accuracy(y_test, predicted)
-
-    # #y_pred = gnb.fit(X_train, y_train).predict(X_test)
-    # #print("Number of mislabeled points out of a total %d points : %d"% (X_test.shape[0], (y_test != y_pred).sum()))
 
     folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
@@ -278,6 +262,7 @@ def naive_bayes(data, k):
         cal_accuracy(y_test, y_pred)
         
         conf_matrix = GenerateConfusionMatrix(y_test, y_pred, 2)
+        print(conf_matrix)
 
         fold_accuracy, fold_precision, fold_recall, fold_f1_measure = generateMetrics(conf_matrix)
 
@@ -304,7 +289,7 @@ def naive_bayes(data, k):
 
     #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Árvore de decisão")
 
-    testeBoxSplot(array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
+    testeBoxSplot('Naïve Bayes', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy, end=' | ')
@@ -386,7 +371,7 @@ def florestas_aleatorias(data_normalized, k):
     var_f1 = calculateVariance(array_f1_measure_folds, f1_measure)
 
     #generateGraphics(title_folds, array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds, "Florestas aleatórias")
-    testeBoxSplot(array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
+    testeBoxSplot('Florestas Aleatórias', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias: ')
     print('Accuracy: ', accuracy, end=' | ')
@@ -466,11 +451,21 @@ def GenerateConfusionMatrix(predicted, Y, n_classes):
     return confusion_matrix
 
 def generateMetrics(conf_matrix):
-    vp = conf_matrix[0][0]
-    vn = conf_matrix[1][1]
+
+    # vp = conf_matrix[0][0]
+    # vn = conf_matrix[1][1]
+    # fp = conf_matrix[1][0]
+    # fn = conf_matrix[0][1]
+
+    # pred x verd (linha x coluna)
+    #   0    1  
+    # 0 vn  fn 
+    # 1 fp  vp
+
+    vn = conf_matrix[0][0]
+    vp = conf_matrix[1][1]
     fp = conf_matrix[1][0]
     fn = conf_matrix[0][1]
-
 
     accuracy = (vp + vn)/ (vp + vn + fp + fn)
     precision = vp / (vp + fp)
