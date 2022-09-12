@@ -227,12 +227,12 @@ def train_using_gini(X_train, X_test, y_train):
   
     # Creating the classifier object
     clf_gini = DecisionTreeClassifier(criterion = "gini",
-            random_state = 100,max_depth=4, min_samples_leaf=5)
+            random_state = 100,max_depth=5, min_samples_leaf=5)
   
     # Performing training
     clf_gini.fit(X_train, y_train)
 
-    tree_fig = plt.figure(num=5, figsize = (80,80))
+    tree_fig = plt.figure(num=5, figsize = (40,40))
     _ = tree.plot_tree(clf_gini)
     tree_fig.savefig("decision_tree.png")
 
@@ -360,7 +360,7 @@ def naive_bayes(data, k):
 
 def florestas_aleatorias(data_normalized, k):
 
-    model = RandomForestClassifier(n_estimators=100, criterion="gini", max_depth = 4, min_samples_leaf = 5, max_features="sqrt", random_state=0)
+    model = RandomForestClassifier(n_estimators=100, criterion="gini", max_depth = 5, min_samples_leaf = 5, max_features="sqrt", random_state=0)
 
     accuracy = 0
     precision = 0
