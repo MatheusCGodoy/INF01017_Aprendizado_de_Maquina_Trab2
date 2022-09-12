@@ -7,7 +7,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import GaussianNB, CategoricalNB
+from sklearn import tree
 
 import matplotlib.pyplot as plt
 
@@ -24,10 +25,6 @@ def normalize(data_frame : pd.DataFrame, train_df : pd.DataFrame, target='target
     return normalized_df
 
 def arvores_decisao(data, k):
-    print("Dataset Length: ", len(data))
-    print("Dataset Shape: ", data.shape)
-
-    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
     accuracy = 0
     precision = 0
@@ -39,6 +36,8 @@ def arvores_decisao(data, k):
     array_precision_folds = []
     array_recall_folds = []
     array_f1_measure_folds = []
+
+    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
     for i in range(k):
         
@@ -228,10 +227,15 @@ def train_using_gini(X_train, X_test, y_train):
   
     # Creating the classifier object
     clf_gini = DecisionTreeClassifier(criterion = "gini",
-            random_state = 100,max_depth=3, min_samples_leaf=5)
+            random_state = 100,max_depth=4, min_samples_leaf=5)
   
     # Performing training
     clf_gini.fit(X_train, y_train)
+
+    tree_fig = plt.figure(num=5, figsize = (80,80))
+    _ = tree.plot_tree(clf_gini)
+    tree_fig.savefig("decision_tree.png")
+
     return clf_gini
       
 # Function to perform training with entropy.
@@ -267,8 +271,6 @@ def cal_accuracy(y_test, y_pred):
 
 def naive_bayes(data, k):
 
-    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
-
     accuracy = 0
     precision = 0
     recall = 0 
@@ -279,6 +281,8 @@ def naive_bayes(data, k):
     array_precision_folds = []
     array_recall_folds = []
     array_f1_measure_folds = []
+    
+    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
     for i in range(k):
         
@@ -355,9 +359,8 @@ def naive_bayes(data, k):
     print('Desvio padrão F1: ', desvio_padrao_f1)
 
 def florestas_aleatorias(data_normalized, k):
-    
-    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
-    model = RandomForestClassifier(n_estimators=100, criterion="gini", max_depth = 3, min_samples_leaf = 5, max_features="sqrt")
+
+    model = RandomForestClassifier(n_estimators=100, criterion="gini", max_depth = 4, min_samples_leaf = 5, max_features="sqrt", random_state=0)
 
     accuracy = 0
     precision = 0
@@ -369,6 +372,8 @@ def florestas_aleatorias(data_normalized, k):
     array_precision_folds = []
     array_recall_folds = []
     array_f1_measure_folds = []
+
+    folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
     for i in range(k):
         
@@ -477,7 +482,7 @@ def generateFolds(data_frame: pd.DataFrame, target_col='target', k=5):
 
     # Randomize the element order in each fold / Shuffle folds
     for i in range(0,k):
-        folds[i] = folds[i].sample(frac=1)
+        folds[i] = folds[i].sample(frac=1, random_state=0)
 
     return (folds, len(groups))
 
@@ -503,6 +508,11 @@ def generateConfusionMatrix(predicted, Y, n_classes):
 
 def generateMetrics(conf_matrix):
 
+    # predito x verdadeiro
+    #   0   1
+    # 0 vn  fn
+    # 1 fp  vp
+
     vn = conf_matrix[0][0]
     vp = conf_matrix[1][1]
     fp = conf_matrix[1][0]
@@ -517,18 +527,22 @@ def generateMetrics(conf_matrix):
 
 if __name__ == '__main__':
 
-    data = pd.read_csv("heart_failure_clinical_records_dataset.csv", delimiter=',', header=0)
+    data = pd.read_csv("heart_failure_clinical_records_dataset.csv", delimiter=',', header=0)   
+    print("Dataset Length: ", len(data))
+    print("Dataset Shape: ", data.shape)
+
+    k = int(input("Insira o numero de Folds desejado:\n"))
 
     print("ARVORES DE DECISAO:")
-    arvores_decisao(data, 5)
+    arvores_decisao(data, k)
     print("\n\n\n")
 
     print("FLORESTAS ALEATORIAS:")
-    florestas_aleatorias(data, 5)
+    florestas_aleatorias(data, k)
     print("\n\n\n")
     
     print("NAIVE BAYES:")
-    naive_bayes(data, 5)
+    naive_bayes(data, k)
     print("\n\n\n")
 
     plt.show() 
