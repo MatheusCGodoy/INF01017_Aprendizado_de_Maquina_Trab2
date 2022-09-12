@@ -52,6 +52,8 @@ def arvores_decisao(data, k):
         y_train = x_train.iloc[:, -1]
         x_train = x_train.drop(columns=['DEATH_EVENT'])
 
+        feature_names = x_train.columns
+
         # Normalize data
         x_test = normalize(x_test, x_train, 'DEATH_EVENT')
         x_train = normalize(x_train, x_train, 'DEATH_EVENT')
@@ -61,7 +63,7 @@ def arvores_decisao(data, k):
         x_test = x_test.to_numpy()
         y_test = y_test.to_numpy()
         
-        clf_gini = train_using_gini(x_train, x_test, y_train)
+        clf_gini = train_using_gini(x_train, x_test, y_train, feature_names)
 
         # Prediction using gini
         y_pred_gini = prediction(x_test, clf_gini)
@@ -223,7 +225,7 @@ def splitdataset(data):
     return X, Y, X_train, X_test, y_train, y_test
 
 # Function to perform training with giniIndex.
-def train_using_gini(X_train, X_test, y_train):
+def train_using_gini(X_train, X_test, y_train, feature_names):
   
     # Creating the classifier object
     clf_gini = DecisionTreeClassifier(criterion = "gini",
@@ -232,8 +234,8 @@ def train_using_gini(X_train, X_test, y_train):
     # Performing training
     clf_gini.fit(X_train, y_train)
 
-    tree_fig = plt.figure(num=5, figsize = (40,40))
-    _ = tree.plot_tree(clf_gini)
+    tree_fig = plt.figure(num=5, figsize = (16,16))
+    _ = tree.plot_tree(feature_names= feature_names, class_names=['0', '1'], decision_tree=clf_gini)
     tree_fig.savefig("decision_tree.png")
 
     return clf_gini
