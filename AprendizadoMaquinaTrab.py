@@ -139,92 +139,24 @@ def arvores_decisao(data, k):
 
 def generateGraphics(array_title, array_accuracy, array_precision, array_recall, array_f1_measure, metodo):
     y_min,y_max = 0.45, 1.05
+    f1 = plt.figure()
 
-    if metodo == 'Árvore de decisão':
-        f1 = plt.figure(1)
-        plt.plot(array_title, array_accuracy, 'k--')
-        plt.plot(array_title, array_accuracy, 'go')
-        plt.title(metodo + " Accuracy variation")
-        plt.ylim((y_min, y_max))
-        f1.show()
+    plt.plot(array_title, array_accuracy, linestyle='-', label="Accuracy")
+    plt.plot(array_title, array_accuracy, 'bo')
 
-        f2 = plt.figure(2)
-        plt.plot(array_title, array_precision, 'k--')
-        plt.plot(array_title, array_precision, 'go')
-        plt.title(metodo + " Precision variation")
-        plt.ylim((y_min, y_max))
-        f2.show()
+    plt.plot(array_title, array_precision, linestyle='-', label="Precision")
+    plt.plot(array_title, array_precision, 'yo')
 
-        f3 = plt.figure(3)
-        plt.plot(array_title, array_recall, 'k--')
-        plt.plot(array_title, array_recall, 'go')
-        plt.title(metodo + " Recall variation")
-        plt.ylim((y_min, y_max))
-        f3.show()
+    plt.plot(array_title, array_recall, linestyle='-', label="Recall")
+    plt.plot(array_title, array_recall, 'go')
 
-        f4 = plt.figure(4)
-        plt.plot(array_title, array_f1_measure, 'k--')
-        plt.plot(array_title, array_f1_measure, 'go')
-        plt.title(metodo + " F1 Measure variation")
-        plt.ylim((y_min, y_max))
-        f4.show()
-    elif metodo == 'Naïve Bayes':
-        f5 = plt.figure(7)
-        plt.plot(array_title, array_accuracy, 'k--')
-        plt.plot(array_title, array_accuracy, 'go')
-        plt.title(metodo + " Accuracy variation")
-        plt.ylim((y_min, y_max))
-        f5.show()
-
-        f6 = plt.figure(8)
-        plt.plot(array_title, array_precision, 'k--')
-        plt.plot(array_title, array_precision, 'go')
-        plt.title(metodo + " Precision variation")
-        plt.ylim((y_min, y_max))
-        f6.show()
-
-        f7 = plt.figure(9)
-        plt.plot(array_title, array_recall, 'k--')
-        plt.plot(array_title, array_recall, 'go')
-        plt.title(metodo + " Recall variation")
-        plt.ylim((y_min, y_max))
-        f7.show()
-
-        f8 = plt.figure(10)
-        plt.plot(array_title, array_f1_measure, 'k--')
-        plt.plot(array_title, array_f1_measure, 'go')
-        plt.title(metodo + " F1 Measure variation")
-        plt.ylim((y_min, y_max))
-        f8.show()
-    else:
-        f13 = plt.figure(13)
-        plt.plot(array_title, array_accuracy, 'k--')
-        plt.plot(array_title, array_accuracy, 'go')
-        plt.title(metodo + " Accuracy variation")
-        plt.ylim((y_min, y_max))
-        f13.show()
-
-        f14 = plt.figure(14)
-        plt.plot(array_title, array_precision, 'k--')
-        plt.plot(array_title, array_precision, 'go')
-        plt.title(metodo + " Precision variation")
-        plt.ylim((y_min, y_max))
-        f14.show()
-
-        f15 = plt.figure(15)
-        plt.plot(array_title, array_recall, 'k--')
-        plt.plot(array_title, array_recall, 'go')
-        plt.title(metodo + " Recall variation")
-        plt.ylim((y_min, y_max))
-        f15.show()
-
-        f16 = plt.figure(16)
-        plt.plot(array_title, array_f1_measure, 'k--')
-        plt.plot(array_title, array_f1_measure, 'go')
-        plt.title(metodo + " F1 Measure variation")
-        plt.ylim((y_min, y_max))
-        f16.show()
-
+    plt.plot(array_title, array_f1_measure, linestyle='-', label="F1_Measure")
+    plt.plot(array_title, array_f1_measure, 'ro')
+    
+    plt.title('Métricas ' + metodo)
+    f1.legend()
+    f1.show()
+    
 def generateBoxSplot(nome_algoritmo, accuracy, precision, recall, f1_measure):
     data = [accuracy, precision, recall, f1_measure]
  
