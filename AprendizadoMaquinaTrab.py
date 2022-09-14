@@ -37,6 +37,11 @@ def arvores_decisao(data, k):
     array_recall_folds = []
     array_f1_measure_folds = []
 
+    vn = 0
+    vp = 0
+    fp = 0
+    fn = 0
+
     folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
     for i in range(k):
@@ -71,6 +76,11 @@ def arvores_decisao(data, k):
         
         conf_matrix = generateConfusionMatrix(y_test, y_pred_gini, 2)
 
+        vn += conf_matrix[0][0]
+        vp += conf_matrix[1][1]
+        fp += conf_matrix[1][0]
+        fn += conf_matrix[0][1]
+
         print("Arvore de Decisão Fold " + str(i + 1) + " Confusion Matrix: ")
         print(conf_matrix)
         print("\n")
@@ -93,6 +103,17 @@ def arvores_decisao(data, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
+    vn = int(vn/k)
+    vp = int(vp/k)
+    fp = int(fp/k)
+    fn = int(fn/k)
+
+    matrixNumpy = np.zeros(shape=[2, 2])
+    matrixNumpy[0,0] = vn
+    matrixNumpy[1,1] = vp
+    matrixNumpy[1,0] = fp
+    matrixNumpy[0,1] = fn
+
     var_acc, desvio_padrao_acc = calculateVarianceAndStdDeviation(array_accuracy_folds, accuracy)
     var_prec, desvio_padrao_prec = calculateVarianceAndStdDeviation(array_precision_folds, precision)
     var_rec, desvio_padrao_rec = calculateVarianceAndStdDeviation(array_recall_folds, recall)
@@ -102,7 +123,8 @@ def arvores_decisao(data, k):
     generateBoxSplot('Árvore de Decisão', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias Árvores de decisão: ')
-    print('Accuracy: ', accuracy, end=' | ')
+    print('Matriz de confusão média: \n', matrixNumpy)
+    print('\nAccuracy: ', accuracy, end=' | ')
     print('Var acc: ', var_acc)
     print('Desvio padrão acc: ', desvio_padrao_acc)
     print('Precision: ', precision, end=' | ')
@@ -226,19 +248,6 @@ def generateBoxSplot(nome_algoritmo, accuracy, precision, recall, f1_measure):
     # show plot
     plt.show(block=False)
 
-# Function to split the dataset
-def splitdataset(data):
-  
-    # Separating the target variable
-    X = data.values[:, :-1]
-    Y = data.values[:, -1]
-  
-    # Splitting the dataset into train and test
-    X_train, X_test, y_train, y_test = train_test_split( 
-    X, Y, test_size = 0.3, random_state = 100)
-      
-    return X, Y, X_train, X_test, y_train, y_test
-
 # Function to perform training with giniIndex.
 def train_using_gini(X_train, X_test, y_train, feature_names):
   
@@ -255,18 +264,6 @@ def train_using_gini(X_train, X_test, y_train, feature_names):
 
     return clf_gini
       
-# Function to perform training with entropy.
-def train_using_entropy(X_train, X_test, y_train):
-  
-    # Decision tree with entropy
-    clf_entropy = DecisionTreeClassifier(
-            criterion = "entropy", random_state = 100,
-            max_depth = 3, min_samples_leaf = 5)
-  
-    # Performing training
-    clf_entropy.fit(X_train, y_train)
-    return clf_entropy
-
 # Function to make predictions
 def prediction(X_test, clf_object):
   
@@ -298,6 +295,11 @@ def naive_bayes(data, k):
     array_precision_folds = []
     array_recall_folds = []
     array_f1_measure_folds = []
+
+    vn = 0
+    vp = 0
+    fp = 0
+    fn = 0
     
     folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
@@ -327,10 +329,13 @@ def naive_bayes(data, k):
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
 
-        #cal_accuracy(y_test, y_pred)
-        
         conf_matrix = generateConfusionMatrix(y_test, y_pred, 2)
         
+        vn += conf_matrix[0][0]
+        vp += conf_matrix[1][1]
+        fp += conf_matrix[1][0]
+        fn += conf_matrix[0][1]
+
         print("Arvore de Decisão Fold " + str(i + 1) + " Confusion Matrix: ")
         print(conf_matrix)
         print("\n")
@@ -353,6 +358,17 @@ def naive_bayes(data, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
+    vn = int(vn/k)
+    vp = int(vp/k)
+    fp = int(fp/k)
+    fn = int(fn/k)
+
+    matrixNumpy = np.zeros(shape=[2, 2])
+    matrixNumpy[0,0] = vn
+    matrixNumpy[1,1] = vp
+    matrixNumpy[1,0] = fp
+    matrixNumpy[0,1] = fn
+
     var_acc, desvio_padrao_acc = calculateVarianceAndStdDeviation(array_accuracy_folds, accuracy)
     var_prec, desvio_padrao_prec = calculateVarianceAndStdDeviation(array_precision_folds, precision)
     var_rec, desvio_padrao_rec = calculateVarianceAndStdDeviation(array_recall_folds, recall)
@@ -362,7 +378,8 @@ def naive_bayes(data, k):
     generateBoxSplot('Naïve Bayes', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias Naive Bayes: ')
-    print('Accuracy: ', accuracy, end=' | ')
+    print('Matriz de confusão média: \n', matrixNumpy)
+    print('\nAccuracy: ', accuracy, end=' | ')
     print('Var acc: ', var_acc)
     print('Desvio padrão acc: ', desvio_padrao_acc)
     print('Precision: ', precision, end=' | ')
@@ -389,6 +406,11 @@ def florestas_aleatorias(data_normalized, k):
     array_precision_folds = []
     array_recall_folds = []
     array_f1_measure_folds = []
+
+    vn = 0
+    vp = 0
+    fp = 0
+    fn = 0
 
     folds, _ = generateFolds(data, 'DEATH_EVENT', k)
 
@@ -422,6 +444,11 @@ def florestas_aleatorias(data_normalized, k):
         
         conf_matrix = generateConfusionMatrix(y_test, y_pred_gini, 2)
 
+        vn += conf_matrix[0][0]
+        vp += conf_matrix[1][1]
+        fp += conf_matrix[1][0]
+        fn += conf_matrix[0][1]
+
         print("Florestas aleatórias Fold " + str(i + 1) + " Confusion Matrix: ")
         print(conf_matrix)
         print("\n")
@@ -444,6 +471,17 @@ def florestas_aleatorias(data_normalized, k):
     recall = recall/k
     f1_measure = f1_measure/k
 
+    vn = int(vn/k)
+    vp = int(vp/k)
+    fp = int(fp/k)
+    fn = int(fn/k)
+
+    matrixNumpy = np.zeros(shape=[2, 2])
+    matrixNumpy[0,0] = vn
+    matrixNumpy[1,1] = vp
+    matrixNumpy[1,0] = fp
+    matrixNumpy[0,1] = fn
+
     var_acc, desvio_padrao_acc = calculateVarianceAndStdDeviation(array_accuracy_folds, accuracy)
     var_prec, desvio_padrao_prec = calculateVarianceAndStdDeviation(array_precision_folds, precision)
     var_rec, desvio_padrao_rec = calculateVarianceAndStdDeviation(array_recall_folds, recall)
@@ -453,7 +491,8 @@ def florestas_aleatorias(data_normalized, k):
     generateBoxSplot('Florestas Aleatórias', array_accuracy_folds, array_precision_folds, array_recall_folds, array_f1_measure_folds)
 
     print('Nossas estatísticas médias Florestas aleatórias: ')
-    print('Accuracy: ', accuracy, end=' | ')
+    print('Matriz de confusão média: \n', matrixNumpy)
+    print('\nAccuracy: ', accuracy, end=' | ')
     print('Var acc: ', var_acc)
     print('Desvio padrão acc: ', desvio_padrao_acc)
     print('Precision: ', precision, end=' | ')
