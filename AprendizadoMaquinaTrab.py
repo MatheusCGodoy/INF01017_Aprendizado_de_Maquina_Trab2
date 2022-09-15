@@ -143,7 +143,7 @@ def generateGraphics(array_title, array_accuracy, array_precision, array_recall,
 
     plt.plot(array_title, array_accuracy, linestyle='-', label="Accuracy")
     plt.plot(array_title, array_accuracy, 'bo')
-
+    
     plt.plot(array_title, array_precision, linestyle='-', label="Precision")
     plt.plot(array_title, array_precision, 'yo')
 
@@ -153,6 +153,7 @@ def generateGraphics(array_title, array_accuracy, array_precision, array_recall,
     plt.plot(array_title, array_f1_measure, linestyle='-', label="F1_Measure")
     plt.plot(array_title, array_f1_measure, 'ro')
     
+    plt.ylim(y_min, y_max)
     plt.title('Métricas ' + metodo)
     f1.legend()
     f1.show()
